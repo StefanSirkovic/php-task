@@ -24,6 +24,9 @@ elseif ($request_method == "GET" && strpos($_SERVER["REQUEST_URI"], "/products")
 elseif ($request_method == "PUT" && preg_match("/products\/(\d+)/", $_SERVER["REQUEST_URI"], $matches)) {
     updateProduct($conn, $matches[1]);
 }
+elseif ($request_method == "DELETE" && preg_match("/products\/(\d+)/", $_SERVER["REQUEST_URI"], $matches)) {
+    deleteProduct($conn, $matches[1]);
+}
 
 
 function getCategories($conn){
@@ -92,8 +95,17 @@ function updateProduct($conn, $id){
     else{
         echo json_encode(["error" => "Azuriranje proizvoda nije uspelo."]);
     }
+}
 
-
+function deleteProduct($conn, $id){
+    $stmt = $conn->prepare("DELETE FROM products WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    if($stmt->execute()){
+        echo json_encode(["message" => "Proizvod uspesno obrisan."]);
+    }
+    else{
+        echo json_encode(["error" => "Brisanje proizvoda nije uspelo"]);
+    }
 }
 
 
