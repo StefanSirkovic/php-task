@@ -15,9 +15,13 @@ elseif($request_method == "PUT" && preg_match("/categories\/(\d+)/", $_SERVER["R
 elseif ($request_method == "DELETE" && preg_match("/categories\/(\d+)/", $_SERVER["REQUEST_URI"], $matches)) {
     deleteCategory($conn, $matches[1]);
 }
+elseif ($request_method == "GET" && strpos($_SERVER["REQUEST_URI"], "/products/") !== false && preg_match("/products\/(\d+)/", $_SERVER["REQUEST_URI"], $matches)) {
+    getProductsByCategory($conn, $matches[1]);
+}
 elseif ($request_method == "GET" && strpos($_SERVER["REQUEST_URI"], "/products") !== false) {
     getProducts($conn);
 }
+
 
 function getCategories($conn){
     $result = $conn->query("SELECT * FROM categories
@@ -58,8 +62,18 @@ function getProducts($conn){
                             ORDER BY id asc");
 
     echo json_encode($result->fetch_all(MYSQLI_ASSOC));
-
 }
+
+
+function getProductsByCategory($conn, $category_id){
+    $stmt = $conn->prepare("SELECT * FROM products WHERE category_id = ?");
+    $stmt->bind_param("i", $category_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    echo json_encode($result->fetch_all(MYSQLI_ASSOC));
+}
+
 
 
 
