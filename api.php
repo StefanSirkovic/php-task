@@ -21,6 +21,9 @@ elseif ($request_method == "GET" && strpos($_SERVER["REQUEST_URI"], "/products/"
 elseif ($request_method == "GET" && strpos($_SERVER["REQUEST_URI"], "/products") !== false) {
     getProducts($conn);
 }
+elseif ($request_method == "PUT" && preg_match("/products\/(\d+)/", $_SERVER["REQUEST_URI"], $matches)) {
+    updateProduct($conn, $matches[1]);
+}
 
 
 function getCategories($conn){
@@ -72,6 +75,25 @@ function getProductsByCategory($conn, $category_id){
     $result = $stmt->get_result();
 
     echo json_encode($result->fetch_all(MYSQLI_ASSOC));
+}
+
+function updateProduct($conn, $id){
+    $input = json_decode(file_get_contents("php://input"),true);
+    if (!isset($input["description"]) || empty(trim($input["description"]))) {
+        echo json_encode(["error" => "Potrebno je uneti deskripciju proizvoda za izmenu."]);
+        return;
+    }
+
+    $stmt = $conn->prepare("UPDATE products SET description = ? WHERE id = ?");
+    $stmt->bind_param("si", $input["description"], $id);
+    if($stmt->execute()){
+        echo json_encode(["message" => "Proizvod uspesno azuriran."]);
+    }
+    else{
+        echo json_encode(["error" => "Azuriranje proizvoda nije uspelo."]);
+    }
+
+
 }
 
 
