@@ -12,6 +12,9 @@ if ($request_method == "GET" && strpos($_SERVER["REQUEST_URI"], "/categories") !
 elseif($request_method == "PUT" && preg_match("/categories\/(\d+)/", $_SERVER["REQUEST_URI"], $matches)) {
     updateCategory($conn, $matches[1]);
 }
+elseif ($request_method == "DELETE" && preg_match("/categories\/(\d+)/", $_SERVER["REQUEST_URI"], $matches)) {
+    deleteCategory($conn, $matches[1]);
+}
 
 function getCategories($conn){
     $result = $conn->query("SELECT * FROM categories
@@ -33,6 +36,17 @@ function updateCategory($conn, $id){
     }
     else{
         echo json_encode(["error" => "Azuriranje kategorije nije uspelo."]);
+    }
+}
+
+function deleteCategory($conn, $id){
+    $stmt = $conn->prepare("DELETE FROM categories WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    if($stmt->execute()){
+        echo json_encode(["message" => "Kategorija uspesno obrisana"]);
+    }
+    else {
+        echo json_encode(["error" => "Brisanje kategorije nije uspelo"]);
     }
 }
 
