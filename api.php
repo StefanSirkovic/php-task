@@ -15,6 +15,9 @@ elseif($request_method == "PUT" && preg_match("/categories\/(\d+)/", $_SERVER["R
 elseif ($request_method == "DELETE" && preg_match("/categories\/(\d+)/", $_SERVER["REQUEST_URI"], $matches)) {
     deleteCategory($conn, $matches[1]);
 }
+elseif ($request_method == "GET" && strpos($_SERVER["REQUEST_URI"], "/products") !== false) {
+    getProducts($conn);
+}
 
 function getCategories($conn){
     $result = $conn->query("SELECT * FROM categories
@@ -49,6 +52,15 @@ function deleteCategory($conn, $id){
         echo json_encode(["error" => "Brisanje kategorije nije uspelo"]);
     }
 }
+
+function getProducts($conn){
+    $result = $conn->query("SELECT * FROM products
+                            ORDER BY id asc");
+
+    echo json_encode($result->fetch_all(MYSQLI_ASSOC));
+
+}
+
 
 
 $conn->close();
