@@ -82,13 +82,28 @@ function getProductsByCategory($conn, $category_id){
 
 function updateProduct($conn, $id){
     $input = json_decode(file_get_contents("php://input"),true);
-    if (!isset($input["description"]) || empty(trim($input["description"]))) {
-        echo json_encode(["error" => "Potrebno je uneti deskripciju proizvoda za izmenu."]);
+    if (empty($input)) {
+        echo json_encode(["error" => "Nisu poslati svi potrebni podaci za azuriranje."]);
         return;
     }
 
-    $stmt = $conn->prepare("UPDATE products SET description = ? WHERE id = ?");
-    $stmt->bind_param("si", $input["description"], $id);
+    $fields = [];
+    $params = [];
+    $types = "";
+
+    foreach($input as $key => $value){
+        $fiels[] = "$key = ?";
+        $params[] = $value;
+        $types .= (is_numeric($value) ? "i" : "s");
+    }
+
+    $query = "UPDATE products SET " . implode (", ", $fiels) . " WHERE id = ?";
+    $params[] = $id;
+    $types .= "i";
+
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param($types, ...$params);
+
     if($stmt->execute()){
         echo json_encode(["message" => "Proizvod uspesno azuriran."]);
     }
